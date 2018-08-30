@@ -1,0 +1,100 @@
+<html>
+<head>
+    <h2>首页</h2>
+    <script type="text/javascript" src="../js/jquery.js"></script>
+</head>
+<body>
+<label>昵称：</label><input type="text" name="name" id="name">
+<button onclick="createUser()">创建用户</button>
+
+
+
+<table id="table" border="1">
+    <tr>
+        <th>id</th>
+        <th>name</th>
+        <th>age</th>
+        <th>action</th>
+    </tr>
+    <% if(typeof(users) !== 'undefined'){ %>
+    <% if (users) { %>
+    <% users.forEach(function(user){ %>
+    <tr>
+        <td><%= user.id %></td>
+        <td><%= user.name %></td>
+        <td><%= user.age %></td>
+        <td>
+            <button onclick="update(<%= user.id %>)">修改</button>
+            <button onclick="deleteUser(<%= user.id %>)">删除</button>
+        </td>
+    </tr>
+    <% }); %>
+    <% } %>
+    <% } %>
+
+</table>
+<label>查询用户：</label><input type="text" name="searchName" id="searchName">
+<button onclick="searchUser()">查询</button>
+</body>
+
+<script>
+    function searchUser(){
+      let searchName = $('#searchName').val();
+      $.get('/user', {name: searchName}, (data) => {
+        alert(JSON.stringify(data));
+      });
+    }
+  function createUser() {
+    let name = $('#name').val();
+    $.post('/user', {name: name}, (data) => {
+      alert(JSON.stringify(data));
+      window.location.reload();
+    });
+  }
+
+  function deleteUser(id) {
+    $.ajax({
+      url: 'user/' + id,
+      type: 'DELETE',
+      success: () => {
+        window.location.reload();
+      },
+      error: (data) => {
+        alert(JSON.stringify(data));
+      }
+    })
+  }
+
+  function update(id) {
+    let node = document.getElementById("updateName_"+ id);
+    if (!isInPage(node)) {
+      let inputName = "<label>修改姓名：</label><input type='text' name='updateName' id='updateName_" + id+"' >";
+      let inputAge = "<label>修改年龄：</label><input type='text' name='updateAge' id='updateAge_" + id +"' >";
+      let update = "<button onclick='commitUpdate(" + id + ")' >提交</button>";
+      $('#table').after(update).after(inputAge).after(inputName);
+    }
+  }
+
+  function commitUpdate(id) {
+    let name = $('#updateName_'+id).val();
+    let age = $('#updateAge_'+id).val();
+    let data = {name:name,age:age};
+    $.ajax({
+      url: 'user/' + id,
+      type: 'PUT',
+      data:data,
+      success: (data) => {
+        alert(JSON.stringify(data));
+        window.location.reload();
+      },
+      error: (data) => {
+        alert(JSON.stringify(data));
+      }
+    })
+  }
+
+  function isInPage(node) {
+    return (node === document.body) ? false : document.body.contains(node);
+  }
+</script>
+</html>
